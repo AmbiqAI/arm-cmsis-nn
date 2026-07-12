@@ -1,0 +1,51 @@
+schema_version: 1
+
+module:
+  name: arm-cmsis-nn
+  type: backend_specific
+  version: "7.26.0"
+
+support:
+  ambiqsuite: true
+  zephyr: false
+
+summary: >-
+  Thin NSX wrapper around Arm's upstream CMSIS-NN implementation. It exposes
+  the standard cmsis-nn library as nsx::arm_cmsis_nn for TFLM consumers.
+
+capabilities:
+  - cmsis_nn
+  - neural_network_kernels
+  - arm_optimized
+
+use_cases:
+  - standard CMSIS-NN TFLM kernels
+  - reference-versus-CMSIS-NN comparisons
+  - portable Arm kernel benchmarking
+
+agent_keywords:
+  - arm
+  - cmsis
+  - cmsis-nn
+  - cmsis_nn
+  - neural_network
+
+build:
+  cmake:
+    package: nsx_arm_cmsis_nn
+    targets:
+      - nsx::arm_cmsis_nn
+
+depends:
+  required: []
+  optional: []
+
+compatibility:
+  boards:
+    - "*"
+  socs:
+    - "*"
+  toolchains:
+    - arm-none-eabi-gcc
+    - armclang
+    - atfe
