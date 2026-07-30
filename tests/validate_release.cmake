@@ -12,6 +12,10 @@ if(NOT _module_match)
     message(FATAL_ERROR "nsx-module.yaml does not declare a valid module identity")
 endif()
 set(_version "${CMAKE_MATCH_1}")
+if(NOT _module MATCHES
+        "version:[ \t]*\"${_version}\"[ \t]*#[ \t]*x-release-please-version")
+    message(FATAL_ERROR "nsx-module.yaml omits its Release Please version marker")
+endif()
 
 file(READ "${_root}/version.txt" _version_file)
 string(STRIP "${_version_file}" _version_file)

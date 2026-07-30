@@ -11,9 +11,8 @@
       "bump-patch-for-minor-pre-major": true,
       "extra-files": [
         {
-          "type": "yaml",
-          "path": "nsx-module.yaml",
-          "jsonpath": "$.module.version"
+          "type": "generic",
+          "path": "nsx-module.yaml"
         }
       ]
     }
