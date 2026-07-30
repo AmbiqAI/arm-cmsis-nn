@@ -1,0 +1,80 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  metadata:
+    name: Validate metadata and source archive
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # releases/v4
+        with:
+          fetch-depth: 0
+          submodules: recursive
+
+      - name: Validate release contract
+        run: cmake -P tests/validate_release.cmake
+
+      - name: Build and inspect source archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="$(tr -d '[:space:]' < version.txt)"
+          archive="arm-cmsis-nn-${version}.tar.gz"
+          prefix="arm-cmsis-nn-${version}"
+          tools/create-source-archive.sh HEAD "$archive"
+          tar -tzf "$archive" \
+            | grep -qx "${prefix}/external/CMSIS-NN/CMakeLists.txt"
+          tar -tzf "$archive" \
+            | grep -qx "${prefix}/external/CMSIS-NN/LICENSE"
+          tar -tzf "$archive" \
+            | grep -qx "${prefix}/external/CMSIS_6/LICENSE"
+
+  host:
+    name: Host configure, build, link, and run
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # releases/v4
+        with:
+          submodules: recursive
+
+      - name: Configure
+        run: cmake -S tests/smoke -B build/host -G Ninja
+
+      - name: Build and run
+        run: |
+          cmake --build build/host --parallel 2
+          ctest --test-dir build/host --output-on-failure
+
+  arm-gcc:
+    name: GNU Arm ${{ matrix.cpu }} configure, build, and link
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        cpu: [cortex-m0, cortex-m4, cortex-m55]
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # releases/v4
+        with:
+          submodules: recursive
+
+      - name: Install GNU Arm Embedded
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y gcc-arm-none-eabi
+
+      - name: Configure
+        run: |
+          cmake -S tests/smoke -B "build/${{ matrix.cpu }}" -G Ninja \
+            -DCMAKE_TOOLCHAIN_FILE="$PWD/tests/toolchains/arm-none-eabi-gcc.cmake" \
+            -DNSX_SMOKE_CPU="${{ matrix.cpu }}"
+
+      - name: Build and link
+        run: cmake --build "build/${{ matrix.cpu }}" --parallel 2

@@ -3,7 +3,7 @@ schema_version: 1
 module:
   name: arm-cmsis-nn
   type: backend_specific
-  version: "7.26.0"
+  version: "0.1.0"
 
 support:
   ambiqsuite: true
