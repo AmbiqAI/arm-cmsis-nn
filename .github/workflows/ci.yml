@@ -30,12 +30,10 @@ jobs:
           archive="arm-cmsis-nn-${version}.tar.gz"
           prefix="arm-cmsis-nn-${version}"
           tools/create-source-archive.sh HEAD "$archive"
-          tar -tzf "$archive" \
-            | grep -qx "${prefix}/external/CMSIS-NN/CMakeLists.txt"
-          tar -tzf "$archive" \
-            | grep -qx "${prefix}/external/CMSIS-NN/LICENSE"
-          tar -tzf "$archive" \
-            | grep -qx "${prefix}/external/CMSIS_6/LICENSE"
+          tar -tzf "$archive" > archive-contents.txt
+          grep -qx "${prefix}/external/CMSIS-NN/CMakeLists.txt" archive-contents.txt
+          grep -qx "${prefix}/external/CMSIS-NN/LICENSE" archive-contents.txt
+          grep -qx "${prefix}/external/CMSIS_6/LICENSE" archive-contents.txt
 
   host:
     name: Host configure, build, link, and run
